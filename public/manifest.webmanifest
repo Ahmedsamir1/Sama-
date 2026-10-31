@@ -1,0 +1,20 @@
+{
+  "name": "Sama ❤️",
+  "short_name": "Sama ❤️",
+  "description": "Sama's Little Universe ❤️ — made with love by Ahmed",
+  "id": "/Sama-/",
+  "start_url": "/Sama-/",
+  "scope": "/Sama-/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff7f2",
+  "theme_color": "#fbcfe8",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    { "src": "/Sama-/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/Sama-/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/Sama-/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/Sama-/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

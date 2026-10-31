@@ -8,13 +8,15 @@ import { Period } from './pages/Period';
 import { Mood } from './pages/Mood';
 import { Ahmed } from './pages/Ahmed';
 import { Kit } from './pages/Kit';
+import { Requests } from './pages/Requests';
 import { PrivacyCard, Settings } from './pages/Settings';
 import type { Tab } from './pages/types';
 
-const TABS: { id: Tab; icon: string; label: 'navHome' | 'navPeriod' | 'navMood' | 'navAhmed' | 'navKit' }[] = [
+const TABS: { id: Tab; icon: string; label: 'navHome' | 'navPeriod' | 'navMood' | 'navRequests' | 'navAhmed' | 'navKit' }[] = [
   { id: 'home', icon: '🏠', label: 'navHome' },
   { id: 'period', icon: '🌙', label: 'navPeriod' },
   { id: 'mood', icon: '🥰', label: 'navMood' },
+  { id: 'requests', icon: '💝', label: 'navRequests' },
   { id: 'ahmed', icon: '💌', label: 'navAhmed' },
   { id: 'kit', icon: '🚨', label: 'navKit' },
 ];
@@ -69,12 +71,13 @@ export default function App() {
             {tab === 'mood' && <Mood />}
             {tab === 'ahmed' && <Ahmed />}
             {tab === 'kit' && <Kit />}
+            {tab === 'requests' && <Requests />}
           </div>
         )}
       </main>
 
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-30 mx-auto max-w-lg px-3">
-        <div className="card mb-1 grid grid-cols-5 gap-1 !rounded-[1.6rem] p-1.5">
+        <div className="card mb-1 grid grid-cols-6 gap-0.5 !rounded-[1.6rem] p-1.5">
           {TABS.map((x) => {
             const active = !showSettings && tab === x.id;
             return (
@@ -85,7 +88,7 @@ export default function App() {
                   setTab(x.id);
                 }}
                 aria-current={active ? 'page' : undefined}
-                className={`flex flex-col items-center gap-0.5 rounded-2xl py-1.5 text-[11px] font-bold transition-all ${
+                className={`flex flex-col items-center gap-0.5 rounded-2xl py-1.5 text-[10.5px] leading-tight font-bold whitespace-nowrap transition-all ${
                   active ? 'bg-gradient-to-b from-blush-100 to-lav-100 text-blush-600' : 'text-ink/60'
                 }`}
               >

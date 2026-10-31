@@ -41,6 +41,6 @@ describe('backup', () => {
 describe('whatsappLink', () => {
   it('builds a draft link without sending', () => {
     expect(whatsappLink('+20 100', 'بحبك ❤️')).toBe(`https://wa.me/20100?text=${encodeURIComponent('بحبك ❤️')}`);
-    expect(whatsappLink('', 'hi')).toBe('https://wa.me/?text=hi');
+    expect(whatsappLink('', 'hi')).toBe('https://wa.me/201020022929?text=hi');
   });
 });

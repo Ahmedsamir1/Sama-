@@ -5,6 +5,7 @@ A private little iPhone web app (PWA) made with love by Ahmed for Sama.
 - 🏠 **Home** — "صباح الفل يا سما ❤️", current cycle day, estimated next period, daily message from Ahmed
 - 🌙 **Period tracker** — log start/end dates, interactive monthly calendar, history, estimates based on recorded cycles
 - 🥰 **Mood tracker** — 6 moods, optional symptoms and a note per day
+- 💝 **Sama's Love Requests** — 🍫 🧸 📞 💋 🍕 💌 buttons that open WhatsApp to Ahmed (201020022929) with a cute prefilled Egyptian Arabic message; Sama presses Send herself
 - 💌 **Ahmed's Corner** — 45 Egyptian Arabic messages, virtual hugs, WhatsApp draft button (never sends automatically)
 - 🚨 **Emergency Cuteness Kit** — chocolate emergency button, kind words, surprise box, compliment cannon, breathing bunny
 - ⚙️ **Settings** — cycle settings, Arabic/English, export/import backup, delete all data
@@ -36,6 +37,8 @@ Stack: React + TypeScript + Vite + Tailwind CSS. The service worker is generated
 Customize:
 - Ahmed's messages: `src/data/messages.ts`
 - Kit messages, coupons, compliments: `src/data/kit.ts`
+- Love request messages: `src/data/requests.ts`
+- Ahmed's WhatsApp number: `src/config.ts` (Sama can override it in Settings)
 - UI text (Arabic/English): `src/lib/i18n.ts`
 - App icon: edit `public/icons/icon.svg`, then `node scripts/generate-icons.mjs` (needs Playwright)
 
@@ -53,7 +56,6 @@ Customize:
 2. Wait for the page to fully load once (this caches it for offline use).
 3. Tap the **Share** button → **Add to Home Screen** → keep the name **Sama ❤️** → **Add**.
 4. Open it from the Home Screen icon (pink heart & moon). It runs full screen and works offline.
-5. Optional: **⚙️ Settings → Ahmed's WhatsApp number** so the WhatsApp buttons open Ahmed's chat directly.
 
 Note: the Home Screen app keeps its own storage, separate from Safari tabs. Deleting the icon or clearing
 website data removes the records, so export a backup occasionally (Settings → Export backup).

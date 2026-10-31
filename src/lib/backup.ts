@@ -1,5 +1,6 @@
 import type { PeriodRecord } from './cycle';
 import { isValidISO } from './dates';
+import { AHMED_WHATSAPP } from '../config';
 import { DEFAULT_SETTINGS, type AppSettings, type MoodEntry, type MoodId } from './db';
 
 export const BACKUP_FORMAT = 'sama-little-universe-backup';
@@ -69,8 +70,12 @@ export function parseBackup(text: string): BackupFile {
   return { format: BACKUP_FORMAT, version: 1, exportedAt: typeof r.exportedAt === 'string' ? r.exportedAt : '', periods, moods, settings };
 }
 
+/**
+ * Builds a wa.me link that opens WhatsApp (iPhone & Android) with a prefilled draft.
+ * It never sends anything — Sama presses Send herself.
+ * Falls back to Ahmed's number when no custom number is set.
+ */
 export function whatsappLink(number: string, text: string): string {
-  const digits = number.replace(/\D/g, '');
-  const q = `text=${encodeURIComponent(text)}`;
-  return digits ? `https://wa.me/${digits}?${q}` : `https://wa.me/?${q}`;
+  const digits = number.replace(/\D/g, '') || AHMED_WHATSAPP;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
 }

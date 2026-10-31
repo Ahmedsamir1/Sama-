@@ -3,6 +3,7 @@ import { PageTitle, Stepper, Toggle } from '../components/UI';
 import { Bunny } from '../components/Bunny';
 import { createBackup, parseBackup } from '../lib/backup';
 import { db } from '../lib/db';
+import { AHMED_WHATSAPP } from '../config';
 import { useStore } from '../lib/store';
 
 declare const __APP_VERSION__: string;
@@ -96,7 +97,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
           inputMode="numeric"
           dir="ltr"
           value={number}
-          placeholder="2010xxxxxxxx"
+          placeholder={AHMED_WHATSAPP}
           onChange={(e) => setNumber(e.target.value.replace(/\D/g, '').slice(0, 20))}
           onBlur={() => number !== settings.whatsappNumber && updateSettings({ whatsappNumber: number }).then(() => showToast(t.saved))}
           className="w-full rounded-2xl border border-blush-200 bg-white px-4 py-3"

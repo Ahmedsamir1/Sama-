@@ -102,6 +102,19 @@ export function Home({ go }: { go: (t: Tab) => void }) {
         </div>
       </section>
 
+      <button
+        className="card animate-pop flex w-full items-center gap-3 bg-gradient-to-br from-blush-100 to-lav-100 p-4 text-start transition-transform active:scale-[0.98]"
+        style={{ animationDelay: '150ms' }}
+        onClick={() => go('requests')}
+      >
+        <span className="animate-heartbeat text-3xl">💝</span>
+        <span className="flex-1">
+          <span className="block font-extrabold text-blush-600">{t.requestsTitle}</span>
+          <span className="block text-xs text-ink/70">{t.requestsSubtitle}</span>
+        </span>
+        <span className="text-blush-400">{lang === 'ar' ? '←' : '→'}</span>
+      </button>
+
       <section className="card animate-pop p-5" style={{ animationDelay: '180ms' }}>
         <p className="mb-3 text-xs font-bold text-lav-500">{todayMood?.mood ? t.todayMood : t.pickMood}</p>
         <div className="grid grid-cols-6 gap-1.5">

@@ -1,0 +1,259 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-blush-50: #fff5f9;
+  --color-blush-100: #ffe4ef;
+  --color-blush-200: #ffc9de;
+  --color-blush-300: #ffa3c6;
+  --color-blush-400: #ff78a9;
+  --color-blush-500: #f0528c;
+  --color-blush-600: #d63a74;
+  --color-lav-100: #f1ebff;
+  --color-lav-200: #e2d6fd;
+  --color-lav-300: #c9b6f2;
+  --color-lav-500: #9b7fe0;
+  --color-cream-50: #fffaf3;
+  --color-cream-100: #fff3e3;
+  --color-cocoa: #6b4a3a;
+  --color-ink: #5a3a50;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Rounded', 'SF Arabic Rounded', 'SF Arabic', 'Segoe UI', 'Noto Sans Arabic', Tahoma, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #fff7f2;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  font-size: 16px; /* prevents iOS zoom on focus */
+}
+
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* iOS Safari ignores background-attachment: fixed, so paint the gradient on a fixed layer. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -20;
+  background: linear-gradient(170deg, #fff7f2 0%, #ffeef5 45%, #f3ecff 100%);
+}
+
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top), 12px);
+}
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 10px);
+}
+
+@utility card {
+  border-radius: 1.75rem;
+  background: rgb(255 255 255 / 0.78);
+  box-shadow: 0 10px 30px -12px rgb(214 58 116 / 0.25), 0 1px 0 rgb(255 255 255) inset;
+  border: 1px solid rgb(255 201 222 / 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.8rem 1.25rem;
+  font-weight: 700;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  &:active {
+    transform: scale(0.95);
+  }
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+@utility btn-primary {
+  color: white;
+  background: linear-gradient(135deg, #ff78a9, #f0528c 55%, #c084fc);
+  box-shadow: 0 8px 20px -8px rgb(240 82 140 / 0.7);
+}
+
+@utility btn-soft {
+  color: var(--color-blush-600);
+  background: var(--color-blush-100);
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0) scale(0.6) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-110vh) scale(1.1) rotate(25deg);
+    opacity: 0;
+  }
+}
+
+@keyframes burst {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(var(--rot, 360deg));
+    opacity: 0.9;
+  }
+}
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.12);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0.85) translateY(8px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes ear-wiggle {
+  0%,
+  85%,
+  100% {
+    transform: rotate(0deg);
+  }
+  90% {
+    transform: rotate(-8deg);
+  }
+  95% {
+    transform: rotate(6deg);
+  }
+}
+
+@keyframes hug-squeeze {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.15, 0.92);
+  }
+  60% {
+    transform: scale(0.95, 1.05);
+  }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.6s ease-in-out infinite;
+}
+.animate-wiggle {
+  animation: wiggle 2.5s ease-in-out infinite;
+}
+.animate-pop {
+  animation: pop-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+.animate-bob {
+  animation: bob 3s ease-in-out infinite;
+}
+.animate-hug {
+  animation: hug-squeeze 0.9s ease-in-out;
+}
+.animate-slide-up {
+  animation: slide-up 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.ear {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: ear-wiggle 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

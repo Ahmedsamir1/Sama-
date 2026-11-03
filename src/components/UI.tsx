@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { useStore } from '../lib/store';
 
 export function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title?: string; children: ReactNode }) {
@@ -10,7 +11,8 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
   if (!open) return null;
-  return (
+  // Portal to <body> so animated (transformed) ancestors can't trap the fixed overlay under the nav bar.
+  return createPortal(
     <div className="fixed inset-0 z-40 flex items-end justify-center" role="dialog" aria-modal="true" aria-label={title}>
       <button className="absolute inset-0 bg-ink/30 backdrop-blur-[2px]" aria-label={t.close} onClick={onClose} />
       <div className="animate-slide-up pb-safe relative max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-[2rem] bg-cream-50 px-5 pt-3 shadow-2xl">
@@ -18,7 +20,8 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
         {title && <h2 className="mb-4 text-center text-lg font-extrabold text-blush-600">{title}</h2>}
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

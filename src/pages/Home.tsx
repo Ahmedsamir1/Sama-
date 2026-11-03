@@ -1,7 +1,6 @@
-import { useMemo } from 'react';
 import { Bunny } from '../components/Bunny';
 import { useBurst } from '../components/Effects';
-import { cycleStatus } from '../lib/cycle';
+import { CycleCard } from '../components/CycleCard';
 import { formatDate, greetingFor, MOOD_EMOJI } from '../lib/i18n';
 import { useStore } from '../lib/store';
 import { messageOfTheDay } from '../data/messages';
@@ -9,13 +8,11 @@ import { MOOD_IDS } from '../lib/backup';
 import type { Tab } from './types';
 
 export function Home({ go }: { go: (t: Tab) => void }) {
-  const { t, settings, periods, moods, today, saveMood, showToast } = useStore();
+  const { t, settings, moods, today, saveMood, showToast } = useStore();
   const [burstLayer, burst] = useBurst();
-  const status = useMemo(() => cycleStatus(periods, settings, today), [periods, settings, today]);
   const todayMood = moods.find((m) => m.date === today);
   const message = messageOfTheDay(today);
   const lang = settings.language;
-  const progress = status.cycleDay ? Math.min(1, status.cycleDay / status.averageLength) : 0;
 
   return (
     <div className="space-y-4">
@@ -38,56 +35,7 @@ export function Home({ go }: { go: (t: Tab) => void }) {
         </div>
       </section>
 
-      {status.hasData ? (
-        <section className="card animate-pop grid grid-cols-[auto_1fr] items-center gap-4 p-5" style={{ animationDelay: '60ms' }}>
-          <div className="relative h-28 w-28">
-            <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-              <circle cx="50" cy="50" r="42" fill="none" stroke="#ffe4ef" strokeWidth="10" />
-              <circle
-                cx="50"
-                cy="50"
-                r="42"
-                fill="none"
-                stroke="url(#ring)"
-                strokeWidth="10"
-                strokeLinecap="round"
-                strokeDasharray={`${progress * 264} 264`}
-                style={{ transition: 'stroke-dasharray 0.8s ease' }}
-              />
-              <defs>
-                <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#ff78a9" />
-                  <stop offset="1" stopColor="#c084fc" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-[10px] font-bold text-ink/60">{t.cycleDay}</span>
-              <span className="text-3xl font-black text-blush-600 tabular-nums">{status.cycleDay}</span>
-            </div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-lav-500">{t.nextPeriod}</p>
-            <p className="text-xl font-extrabold">{formatDate(status.nextStart!, lang, { weekday: 'short', day: 'numeric', month: 'long' })}</p>
-            <p className="text-sm text-ink/70">
-              {status.daysUntilNext! >= 0 ? t.inDays(status.daysUntilNext!) : t.lateDays(-status.daysUntilNext!)}
-            </p>
-            {status.onPeriod && <p className="text-sm font-semibold text-blush-500">{t.onPeriodNow}</p>}
-            <p className="pt-1 text-[11px] text-ink/50">{t.estimateNote}</p>
-          </div>
-        </section>
-      ) : (
-        <section className="card animate-pop flex items-center gap-4 p-5">
-          <Bunny size={72} holding="moon" mood="wink" />
-          <div className="flex-1">
-            <p className="font-extrabold text-blush-600">{t.noDataTitle}</p>
-            <p className="mb-3 text-sm text-ink/70">{t.noDataBody}</p>
-            <button className="btn btn-primary !py-2 text-sm" onClick={() => go('period')}>
-              {t.goRecord}
-            </button>
-          </div>
-        </section>
-      )}
+      <CycleCard onEmpty={() => go('period')} />
 
       <section className="card animate-pop relative overflow-hidden p-5" style={{ animationDelay: '120ms' }}>
         <p className="mb-2 text-xs font-bold text-lav-500">{t.dailyMessage}</p>
@@ -130,7 +78,7 @@ export function Home({ go }: { go: (t: Tab) => void }) {
                 }`}
                 onClick={async (e) => {
                   burst(e.clientX, e.clientY, [MOOD_EMOJI[id], '💕'], 8);
-                  await saveMood({ date: today, symptoms: todayMood?.symptoms ?? [], note: todayMood?.note, mood: id });
+                  await saveMood({ ...todayMood, date: today, symptoms: todayMood?.symptoms ?? [], mood: id });
                   showToast(t.moodReplies[id]);
                 }}
               >

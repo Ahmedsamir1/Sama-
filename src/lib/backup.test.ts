@@ -38,6 +38,29 @@ describe('backup', () => {
   });
 });
 
+describe('backup v2 health fields', () => {
+  it('round-trips daily health records', () => {
+    const mood = { date: '2026-11-02', symptoms: ['nausea'], flow: 'heavy' as const, weight: 58.4, water: 6, painLevel: 7, painAreas: ['abdomen'], note: 'ok' };
+    const b = createBackup([], [mood], DEFAULT_SETTINGS);
+    expect(b.version).toBe(2);
+    expect(parseBackup(JSON.stringify(b)).moods).toEqual([mood]);
+  });
+
+  it('still imports version 1 backups unchanged', () => {
+    const v1 = { format: 'sama-little-universe-backup', version: 1, exportedAt: 'x', periods: [{ id: '1', start: '2026-09-01' }], moods: [{ date: '2026-09-02', mood: 'happy', symptoms: [] }], settings: {} };
+    const parsed = parseBackup(JSON.stringify(v1));
+    expect(parsed.periods).toHaveLength(1);
+    expect(parsed.moods).toEqual([{ date: '2026-09-02', mood: 'happy', symptoms: [] }]);
+  });
+
+  it('drops invalid health values', () => {
+    const parsed = parseBackup(
+      JSON.stringify({ format: 'sama-little-universe-backup', periods: [], moods: [{ date: '2026-09-02', symptoms: [], flow: 'huge', weight: 5, water: -1, painLevel: 42, painAreas: [3] }] }),
+    );
+    expect(parsed.moods).toEqual([{ date: '2026-09-02', symptoms: [] }]);
+  });
+});
+
 describe('whatsappLink', () => {
   it('builds a draft link without sending', () => {
     expect(whatsappLink('+20 100', 'بحبك ❤️')).toBe(`https://wa.me/20100?text=${encodeURIComponent('بحبك ❤️')}`);

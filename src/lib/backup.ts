@@ -1,14 +1,17 @@
 import type { PeriodRecord } from './cycle';
 import { isValidISO } from './dates';
 import { AHMED_WHATSAPP } from '../config';
-import { DEFAULT_SETTINGS, type AppSettings, type MoodEntry, type MoodId } from './db';
+import { DEFAULT_SETTINGS, type AppSettings, type FlowLevel, type MoodEntry, type MoodId } from './db';
 
 export const BACKUP_FORMAT = 'sama-little-universe-backup';
 export const MOOD_IDS: MoodId[] = ['happy', 'hug', 'chocolate', 'sad', 'leaveMe', 'queen'];
+export const FLOW_LEVELS: FlowLevel[] = ['light', 'medium', 'heavy'];
+/** Version 2 adds optional daily health fields to mood entries; version 1 files still import. */
+export const BACKUP_VERSION = 2;
 
 export interface BackupFile {
   format: typeof BACKUP_FORMAT;
-  version: 1;
+  version: number;
   exportedAt: string;
   periods: PeriodRecord[];
   moods: MoodEntry[];
@@ -16,7 +19,7 @@ export interface BackupFile {
 }
 
 export function createBackup(periods: PeriodRecord[], moods: MoodEntry[], settings: AppSettings, now = new Date()): BackupFile {
-  return { format: BACKUP_FORMAT, version: 1, exportedAt: now.toISOString(), periods, moods, settings };
+  return { format: BACKUP_FORMAT, version: BACKUP_VERSION, exportedAt: now.toISOString(), periods, moods, settings };
 }
 
 const clampInt = (v: unknown, min: number, max: number, fallback: number) =>
@@ -51,6 +54,14 @@ export function parseBackup(text: string): BackupFile {
     };
     if (typeof m.mood === 'string' && (MOOD_IDS as string[]).includes(m.mood)) entry.mood = m.mood as MoodId;
     if (typeof m.note === 'string') entry.note = m.note.slice(0, 1000);
+    if (typeof m.flow === 'string' && (FLOW_LEVELS as string[]).includes(m.flow)) entry.flow = m.flow as FlowLevel;
+    if (typeof m.weight === 'number' && m.weight >= 20 && m.weight <= 300) entry.weight = Math.round(m.weight * 10) / 10;
+    if (typeof m.water === 'number' && m.water >= 0 && m.water <= 30) entry.water = Math.round(m.water);
+    if (typeof m.painLevel === 'number' && m.painLevel >= 1 && m.painLevel <= 10) entry.painLevel = Math.round(m.painLevel);
+    if (Array.isArray(m.painAreas)) {
+      const areas = m.painAreas.filter((s): s is string => typeof s === 'string').slice(0, 20);
+      if (areas.length) entry.painAreas = areas;
+    }
     moods.push(entry);
   }
 
@@ -67,7 +78,7 @@ export function parseBackup(text: string): BackupFile {
     privacyAcknowledged: s.privacyAcknowledged === true,
   };
 
-  return { format: BACKUP_FORMAT, version: 1, exportedAt: typeof r.exportedAt === 'string' ? r.exportedAt : '', periods, moods, settings };
+  return { format: BACKUP_FORMAT, version: BACKUP_VERSION, exportedAt: typeof r.exportedAt === 'string' ? r.exportedAt : '', periods, moods, settings };
 }
 
 /**

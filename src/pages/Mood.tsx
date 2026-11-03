@@ -21,7 +21,8 @@ export function Mood() {
 
   const recent = useMemo(() => [...moods].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30), [moods]);
 
-  const base = { date, mood: entry?.mood, symptoms: entry?.symptoms ?? [], note: entry?.note };
+  // Spread the full entry so health fields logged from the cycle page are preserved.
+  const base = { ...entry, date, mood: entry?.mood, symptoms: entry?.symptoms ?? [], note: entry?.note };
 
   async function pick(id: MoodId, e: React.MouseEvent) {
     const mood = entry?.mood === id ? undefined : id;

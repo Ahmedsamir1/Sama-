@@ -120,3 +120,138 @@ export function validatePeriod(record: PeriodRecord, others: PeriodRecord[]): st
   }
   return null;
 }
+
+/* ------------------------------------------------------------------ */
+/* Fertility estimates & calendar classification                       */
+/* ------------------------------------------------------------------ */
+
+/** Luteal phase is roughly constant (~14 days), so ovulation ≈ next start − 14. */
+export const LUTEAL_DAYS = 14;
+
+export type DayKind = 'period' | 'predicted' | 'ovulation' | 'fertile' | 'safe';
+
+export interface CycleWindow {
+  start: ISODate;
+  /** Last day of the cycle (day before the next start). */
+  end: ISODate;
+  periodEnd: ISODate;
+  /** For a period still in progress: the estimated last day (days after periodEnd are shown as predicted). */
+  expectedPeriodEnd: ISODate;
+  ovulation: ISODate;
+  fertileStart: ISODate;
+  fertileEnd: ISODate;
+  /** True for recorded cycles, false for predicted ones. */
+  recorded: boolean;
+}
+
+/** Ovulation & fertile window for a cycle starting at `start` lasting `length` days. */
+export function fertilityFor(start: ISODate, length: number, periodLength: number) {
+  const ovOffset = Math.max(length - LUTEAL_DAYS, periodLength + 1);
+  const ovulation = addDays(start, ovOffset);
+  return { ovulation, fertileStart: addDays(ovulation, -5), fertileEnd: addDays(ovulation, 1) };
+}
+
+/**
+ * Builds recorded + predicted cycle windows from saved data. Gaps longer than MAX_CYCLE
+ * (e.g. months that were never logged) are not filled with guesses.
+ */
+export function cycleWindows(periods: PeriodRecord[], settings: CycleSettings, today: ISODate, until: ISODate): CycleWindow[] {
+  const sorted = sortPeriods(periods);
+  if (!sorted.length) return [];
+  const avg = averageCycleLength(periods, settings);
+  const plen = averagePeriodLength(periods, settings);
+  const out: CycleWindow[] = [];
+  const count = Math.min(36, Math.max(1, Math.ceil(diffDays(today, until) / avg) + 2));
+  const preds = predictedPeriods(periods, settings, today, count);
+
+  sorted.forEach((p, i) => {
+    const next = sorted[i + 1];
+    let end: ISODate;
+    let length: number;
+    if (next && diffDays(p.start, next.start) <= MAX_CYCLE) {
+      length = diffDays(p.start, next.start);
+      end = addDays(next.start, -1);
+    } else if (!next && preds[0] && p.start <= today) {
+      length = avg;
+      end = addDays(preds[0].start, -1);
+    } else {
+      length = avg;
+      end = addDays(p.start, avg - 1);
+    }
+    const pEnd = periodEnd(p, { ...settings, periodLength: plen }, today);
+    const expectedPeriodEnd = p.end ? p.end : addDays(p.start, plen - 1);
+    out.push({ start: p.start, end, periodEnd: pEnd, expectedPeriodEnd, recorded: true, ...fertilityFor(p.start, length, plen) });
+  });
+
+  // Future-dated records are ignored by predictions; only predict after the last current cycle.
+  const lastRecorded = sorted.filter((p) => p.start <= today).at(-1)?.start ?? '';
+  for (const r of preds) {
+    if (r.start <= lastRecorded || out.some((w) => w.recorded && w.start === r.start)) continue;
+    out.push({ start: r.start, end: addDays(r.start, avg - 1), periodEnd: r.end, expectedPeriodEnd: r.end, recorded: false, ...fertilityFor(r.start, avg, plen) });
+  }
+  return out;
+}
+
+/** Classifies each day in [from, to] for the calendar. Days outside any known cycle are omitted. */
+export function classifyDays(
+  periods: PeriodRecord[],
+  settings: CycleSettings,
+  today: ISODate,
+  from: ISODate,
+  to: ISODate,
+): Map<ISODate, DayKind> {
+  const map = new Map<ISODate, DayKind>();
+  for (const w of cycleWindows(periods, settings, today, to)) {
+    if (w.end < from || w.start > to) continue;
+    for (let d = w.start < from ? from : w.start; d <= w.end && d <= to; d = addDays(d, 1)) {
+      let kind: DayKind;
+      if (d <= w.periodEnd) kind = w.recorded ? 'period' : 'predicted';
+      else if (d <= w.expectedPeriodEnd) kind = 'predicted';
+      else if (d === w.ovulation) kind = 'ovulation';
+      else if (d >= w.fertileStart && d <= w.fertileEnd) kind = 'fertile';
+      else kind = 'safe';
+      // Recorded bleeding always wins over any estimate.
+      const prev = map.get(d);
+      if (prev === 'period') continue;
+      map.set(d, kind);
+    }
+  }
+  return map;
+}
+
+/** Large spread between recorded cycle lengths → estimates are less reliable. */
+export function isIrregular(periods: PeriodRecord[]): boolean {
+  const lens = cycleLengths(periods).slice(-6);
+  if (lens.length < 3) return false;
+  return Math.max(...lens) - Math.min(...lens) > 8;
+}
+
+export type CyclePhase =
+  | { kind: 'none' }
+  | { kind: 'period'; periodDay: number; endsIn: number; endDate: ISODate; recordedEnd: boolean }
+  | { kind: 'beforeFertile'; daysUntil: number; date: ISODate }
+  | { kind: 'fertile'; daysUntilOvulation: number; ovulation: ISODate }
+  | { kind: 'luteal'; daysUntil: number; date: ISODate }
+  | { kind: 'late'; daysLate: number; expected: ISODate };
+
+/** What the summary card should say today. */
+export function currentPhase(periods: PeriodRecord[], settings: CycleSettings, today: ISODate): CyclePhase {
+  const status = cycleStatus(periods, settings, today);
+  if (!status.hasData || !status.lastStart || !status.nextStart) return { kind: 'none' };
+  const sorted = sortPeriods(periods).filter((p) => p.start <= today);
+  const last = sorted[sorted.length - 1];
+  const day = status.cycleDay!;
+
+  if (status.onPeriod) {
+    const endDate = last.end ?? addDays(last.start, status.periodLength - 1);
+    return { kind: 'period', periodDay: day, endsIn: Math.max(0, diffDays(today, endDate)), endDate, recordedEnd: !!last.end };
+  }
+  if (status.daysUntilNext! < 0) return { kind: 'late', daysLate: -status.daysUntilNext!, expected: status.nextStart };
+  // Too long since the last record to say anything meaningful about fertility.
+  if (day > MAX_CYCLE) return { kind: 'late', daysLate: day - status.averageLength, expected: status.nextStart };
+
+  const f = fertilityFor(last.start, status.averageLength, status.periodLength);
+  if (today < f.fertileStart) return { kind: 'beforeFertile', daysUntil: diffDays(today, f.fertileStart), date: f.fertileStart };
+  if (today <= f.fertileEnd) return { kind: 'fertile', daysUntilOvulation: diffDays(today, f.ovulation), ovulation: f.ovulation };
+  return { kind: 'luteal', daysUntil: status.daysUntilNext!, date: status.nextStart };
+}

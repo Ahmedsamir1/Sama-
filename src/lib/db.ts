@@ -7,11 +7,40 @@ import type { ISODate } from './dates';
 
 export type MoodId = 'happy' | 'hug' | 'chocolate' | 'sad' | 'leaveMe' | 'queen';
 
+export type FlowLevel = 'light' | 'medium' | 'heavy';
+
+/**
+ * One record per day. Originally mood-only; the health fields were added later and are all
+ * optional, so entries saved by older versions (and old backups) stay valid as-is.
+ */
 export interface MoodEntry {
   date: ISODate;
   mood?: MoodId;
   symptoms: string[];
   note?: string;
+  /** Bleeding intensity. */
+  flow?: FlowLevel;
+  /** Weight in kg. */
+  weight?: number;
+  /** Glasses of water. */
+  water?: number;
+  /** Pain intensity 1–10 (absent = not logged). */
+  painLevel?: number;
+  painAreas?: string[];
+}
+
+/** True when the entry holds nothing worth keeping. */
+export function isEmptyEntry(m: MoodEntry): boolean {
+  return (
+    !m.mood &&
+    m.symptoms.length === 0 &&
+    !m.note?.trim() &&
+    !m.flow &&
+    m.weight == null &&
+    m.water == null &&
+    m.painLevel == null &&
+    !m.painAreas?.length
+  );
 }
 
 export type Language = 'ar' | 'en';

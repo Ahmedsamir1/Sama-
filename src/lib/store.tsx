@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { PeriodRecord } from './cycle';
-import { db, DEFAULT_SETTINGS, requestPersistentStorage, type AppSettings, type MoodEntry } from './db';
+import { db, DEFAULT_SETTINGS, isEmptyEntry, requestPersistentStorage, type AppSettings, type MoodEntry } from './db';
 import { DICTS, type Dict } from './i18n';
 import { todayISO } from './dates';
 
@@ -92,7 +92,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setPeriods((prev) => prev.filter((x) => x.id !== id));
       },
       async saveMood(m) {
-        const empty = !m.mood && m.symptoms.length === 0 && !m.note?.trim();
+        const empty = isEmptyEntry(m);
         if (empty) await db.deleteMood(m.date);
         else await db.putMood(m);
         setMoods((prev) => [...prev.filter((x) => x.date !== m.date), ...(empty ? [] : [m])]);

@@ -3,7 +3,10 @@
 A private little iPhone web app (PWA) made with love by Ahmed for Sama.
 
 - 🏠 **Home** — "صباح الفل يا سما ❤️", current cycle day, estimated next period, daily message from Ahmed
-- 🌙 **Period tracker** — log start/end dates, interactive monthly calendar, history, estimates based on recorded cycles
+- 🌙 **Period tracker** — summary card with an original kawaii mascot (period day, predicted end, fertile window, next period, late notice),
+  Saturday–Friday RTL calendar with swipe navigation (recorded period, predicted period, estimated fertile window, ovulation flower,
+  lower-fertility days, today), daily health notes (flow, weight, water, symptoms, pain intensity & location, mood, notes), history,
+  configurable cycle/period length. Fertility estimates are approximate and **not** contraception guidance.
 - 🥰 **Mood tracker** — 6 moods, optional symptoms and a note per day
 - 💝 **Sama's Love Requests** — 🍫 🧸 📞 💋 🍕 💌 buttons that open WhatsApp to Ahmed (201020022929) with a cute prefilled Egyptian Arabic message; Sama presses Send herself
 - 💌 **Ahmed's Corner** — 45 Egyptian Arabic messages, virtual hugs, WhatsApp draft button (never sends automatically)
